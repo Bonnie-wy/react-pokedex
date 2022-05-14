@@ -15,6 +15,14 @@ export const fetchPokemon = createAsyncThunk(
   }
 );
 
+export const fetchSinglePokemon = createAsyncThunk(
+  "pokemon/fetchPokemon",
+  async (name) => {
+    const response = await pokeApi.get(`/pokemon/${name}`);
+    return response.data;
+  }
+);
+
 export const pokemonSlice = createSlice({
   name: "pokemon",
   initialState,
