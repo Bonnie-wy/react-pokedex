@@ -1,7 +1,8 @@
+import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPokemon } from "../features/pokemon/pokemonSlice";
-import Pill from "./Pill";
+import Pill from "../components/Pill";
 
 const Homepage = () => {
   const dispatch = useDispatch();
@@ -25,7 +26,11 @@ const Homepage = () => {
       <h1>Pokedex</h1>
       {pokemon &&
         pokemon.map((el) => {
-          return <Pill label={el.name} key={el.name} />;
+          return (
+            <Link to={`/pokemon/${el.name}`}>
+              <Pill label={el.name} key={el.name} />
+            </Link>
+          );
         })}
     </div>
   );
