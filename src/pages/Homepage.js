@@ -21,17 +21,16 @@ const Homepage = () => {
   if (isLoading) return <p>Loading...</p>;
   if (hasError) return <p>Oops, there's an error.</p>;
 
+  const pokemonItems = pokemon.map((el) => (
+    <Link to={`/pokemon/${el.name}`} key={el.name}>
+      <Pill label={el.name} />
+    </Link>
+  ));
+
   return (
     <div>
       <h1>Pokedex</h1>
-      {pokemon &&
-        pokemon.map((el) => {
-          return (
-            <Link to={`/pokemon/${el.name}`}>
-              <Pill label={el.name} key={el.name} />
-            </Link>
-          );
-        })}
+      {pokemon && pokemonItems}
     </div>
   );
 };
