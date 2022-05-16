@@ -1,38 +1,64 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { Card } from "react-bootstrap";
-import Button from "../components/Button";
-import { useDispatch } from "react-redux";
-import { fetchSinglePokemon } from "../features/pokemon/pokemonSlice";
-import { useEffect } from "react";
+import Pill from "../components/Pill";
 
-const CardItem = () => {
-  const { name } = useParams();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+const CardItem = ({ currentPokemon }) => {
+  const { name, abilities, sprites, types } = currentPokemon || {};
 
-  useEffect(() => {
-    const fetchPoke = async () => {
-      const res = await dispatch(fetchSinglePokemon(name));
-      console.log(res.payload);
-    };
+  const pokemonAbilities =
+    abilities.length && abilities.map(({ ability }) => ability.name).join(", ");
 
-    fetchPoke();
-  }, [dispatch, name]);
-
-  const onClickBack = () => {
-    navigate("/");
-  };
   return (
-    <Card className="shadow-lg p-3 mb-5 bg-body rounded">
-      <Card.Body>
+    <div className="shadow-lg p-3 mb-5 bg-body rounded">
+      <div className="card-body">
+        <img
+          alt={name}
+          src={sprites.other.dream_world.front_default}
+          top
+          width="100%"
+          height="300"
+        />
+
         <h1 className="display-3 text-capitalize">{name}</h1>
-        <Card.Subtitle className="mb-2 text-muted" tag="h6">
-          Card subtitle
-        </Card.Subtitle>
-        <Card.Text>Some description</Card.Text>
-        <Button label="Back to Pokedex" onClick={onClickBack} />
-      </Card.Body>
-    </Card>
+        <hr className="mt-2 mb-3" />
+        <div className="py-2">
+          <h6 className="mb-2 card-subtitle" tag="h6">
+            About
+          </h6>
+          <p className="card-text">This is a very cute pokemon named {name}.</p>
+        </div>
+        <div className="py-2">
+          <h6 className="mb-2 card-subtitle" tag="h6">
+            Type
+          </h6>
+          <div>
+            {types?.length ? (
+              types?.map(({ type }) => {
+                return (
+                  <Pill
+                    label={type.name}
+                    pokeType={type.name}
+                    key={type.name}
+                  />
+                );
+              })
+            ) : (
+              <Pill label={types.type.name} pokeType={types.type.name} />
+            )}
+          </div>
+        </div>
+        <div className="py-2">
+          <h6 className="mb-2 card-subtitle" tag="h6">
+            Abilities
+          </h6>
+          <ul className="list-group list-unstyled">
+            {abilities?.length ? (
+              <li>{pokemonAbilities}</li>
+            ) : (
+              <li>{abilities.ability.name}</li>
+            )}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 };
 

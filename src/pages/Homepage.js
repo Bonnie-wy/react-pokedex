@@ -1,49 +1,95 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPokemons } from "../features/pokemon/pokemonSlice";
-import { ListGroup, ListGroupItem, Container, Spinner } from "react-bootstrap";
+
+import {
+  fetchPokemons,
+  fetchSinglePokemon,
+} from "../features/pokemon/pokemonSlice";
 import Button from "../components/Button";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { isEmptyObject } from "../utils/helpers";
 
 const Homepage = () => {
   const dispatch = useDispatch();
+  const [term, setTerm] = useState("");
+  const { pokemons, isLoading, searchResults } = useSelector(
+    (state) => state.pokemons
+  );
 
   const fetchData = async () => {
     await dispatch(fetchPokemons());
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!pokemons.length) {
+      fetchData();
+    }
+  }, [pokemons]);
 
-  const handleClick = (e) => {
-    e.preventDefault();
+  const handleLoadMore = () => {
     fetchData();
   };
 
-  const { pokemons, isLoading, hasError } = useSelector((state) => {
-    return state.pokemons;
-  });
+  const submitHandler = (e) => {
+    e.preventDefault();
 
-  if (isLoading) return <Spinner>Loading...</Spinner>;
-  if (hasError) return <p>Oops, there's an error.</p>;
+    if (!term) {
+      return;
+    }
 
-  const pokemonItems =
-    pokemons.length &&
-    pokemons.map((el, index) => (
+    dispatch(fetchSinglePokemon(term));
+  };
+
+  const pokemonItems = () => {
+    let pokemonArray;
+    const lowerCaseTerm = term.toLowerCase();
+
+    if (
+      searchResults[lowerCaseTerm] &&
+      !isEmptyObject(searchResults[lowerCaseTerm])
+    ) {
+      pokemonArray = [searchResults[lowerCaseTerm]];
+    } else {
+      pokemonArray = pokemons || [];
+    }
+
+    return pokemonArray.map((el, index) => (
       <Link to={`/pokemon/${el.name}`} key={el.name}>
-        <ListGroupItem className="list-group-item list-group-item-action">{`${
+        <li className="list-group-item list-group-item-action">{`${
           index + 1
-        }. ${el.name}`}</ListGroupItem>
+        }. ${el.name}`}</li>
       </Link>
     ));
+  };
 
   return (
-    <Container className="container-sm">
+    <section className="container-sm">
       <h1 className="display-3 pt-md-3 pb-md-2">Pokedex</h1>
-      <ListGroup>{pokemonItems}</ListGroup>
-      <Button label="Load More..." onClick={handleClick} />
-    </Container>
+      <form onSubmit={submitHandler}>
+        <div className="input-group flex-nowrap py-3">
+          <span className="input-group-text" id="addon-wrapping">
+            Search
+            {isLoading && (
+              <div className="ms-2">
+                <LoadingSpinner />
+              </div>
+            )}
+          </span>
+          <input
+            type="text"
+            value={term}
+            className="form-control"
+            placeholder="Pokemon"
+            onChange={(e) => setTerm(e.target.value)}
+          />
+        </div>
+      </form>
+      <ul className="list-group">{pokemonItems()}</ul>
+      <div className="mt-2">
+        <Button label="Load More..." onClick={handleLoadMore} />
+      </div>
+    </section>
   );
 };
 

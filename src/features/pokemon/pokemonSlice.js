@@ -5,6 +5,7 @@ import { ENDPOINTS } from "../../constants/endpoint";
 
 const initialState = {
   pokemons: [],
+  searchResults: {},
   next: "",
   prev: "",
   isLoading: false,
@@ -21,11 +22,10 @@ export const fetchPokemons = createAsyncThunk(
   async (_, { getState }) => {
     const { next } = getState().pokemons;
     const params = getParams(next, defaultParams);
-    console.log(params);
-    console.log(next);
     const response = await pokeApi.get(ENDPOINTS.POKEMON, {
       params,
     });
+
     return response.data;
   }
 );
@@ -33,7 +33,10 @@ export const fetchPokemons = createAsyncThunk(
 export const fetchSinglePokemon = createAsyncThunk(
   "pokemons/fetchSinglePokemon",
   async (name) => {
-    const response = await pokeApi.get(`${ENDPOINTS.POKEMON}/${name}`);
+    const response = await pokeApi.get(
+      `${ENDPOINTS.POKEMON}/${name.toLowerCase()}`
+    );
+
     return response.data;
   }
 );
@@ -44,7 +47,7 @@ export const pokemonSlice = createSlice({
   reducers: {},
   extraReducers: {
     [fetchPokemons.pending]: (state) => {
-      return { ...state, isLoading: true };
+      return { ...state, isLoading: true, hasError: false };
     },
     [fetchPokemons.fulfilled]: (state, { payload }) => {
       return {
@@ -56,7 +59,29 @@ export const pokemonSlice = createSlice({
       };
     },
     [fetchPokemons.rejected]: (state) => {
-      return { ...state, pokemons: [], isLoading: false, hasError: true };
+      return { ...state, isLoading: false, hasError: true };
+    },
+    [fetchSinglePokemon.pending]: (state) => {
+      return { ...state, isLoading: true, hasError: false };
+    },
+    [fetchSinglePokemon.fulfilled]: (state, action) => {
+      const {
+        meta: { arg: searchParam },
+      } = action;
+
+      const result = action.payload || {};
+
+      return {
+        ...state,
+        searchResults: {
+          ...state.searchResults,
+          [searchParam.toLowerCase()]: result,
+        },
+        isLoading: false,
+      };
+    },
+    [fetchSinglePokemon.rejected]: (state) => {
+      return { ...state, isLoading: false, hasError: true };
     },
   },
 });
